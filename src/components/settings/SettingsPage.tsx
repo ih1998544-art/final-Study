@@ -3,6 +3,7 @@ import { UserSettings, StudyPreferences } from '../../types/auth';
 import { authService } from '../../services/authService';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
+import { useTheme } from '../../context/ThemeContext';
 import {
   Settings,
   User,
@@ -18,6 +19,12 @@ import {
   LogOut,
   AlertTriangle,
   Check,
+  Sun,
+  Moon,
+  BookOpen,
+  Compass,
+  Zap,
+  Trees,
 } from 'lucide-react';
 
 interface SettingsPageProps {
@@ -29,6 +36,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onLogout,
   onNavigateToProfile,
 }) => {
+  const { themeMode, setThemeMode, colorTheme, setColorTheme, availableModes, availableThemes } = useTheme();
   const [settings, setSettings] = useState<UserSettings>(() => authService.getSettings());
   const [activeTab, setActiveTab] = useState<'account' | 'learning' | 'notifications' | 'appearance'>('account');
 
@@ -627,35 +635,88 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               Workspace Appearance & Accessibility
             </h3>
 
-            {/* Theme Mode Selector */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-slate-700 font-display">
-                Theme Mode
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { id: 'light', label: 'Light Studio' },
-                  { id: 'dark', label: 'Dark Charcoal' },
-                  { id: 'system', label: 'System Sync' },
-                ].map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() =>
-                      setSettings({
-                        ...settings,
-                        appearance: { ...settings.appearance, theme: t.id as any },
-                      })
-                    }
-                    className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                      settings.appearance.theme === t.id
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-1 ring-emerald-500'
-                        : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
+            {/* Theme Mode Selector (7 Modes) */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-200 font-display">
+                  Workspace Appearance & Reading Mode (7 Modes)
+                </label>
+                <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                  Active: {availableModes.find((m) => m.id === themeMode)?.label || themeMode}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {availableModes.map((mode) => {
+                  const isSelected = themeMode === mode.id;
+                  return (
+                    <button
+                      key={mode.id}
+                      type="button"
+                      onClick={() => setThemeMode(mode.id)}
+                      className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-2 ${
+                        isSelected
+                          ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20 shadow-sm'
+                          : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-700 shrink-0 shadow-xs"
+                          style={{ backgroundColor: mode.bgHex }}
+                        />
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold border border-slate-200 dark:border-slate-700">
+                          {mode.badge}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="font-bold text-xs text-slate-900 dark:text-slate-100">{mode.label}</div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{mode.sublabel}</div>
+                      </div>
+                      {isSelected && (
+                        <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <Check className="w-3 h-3" />
+                          <span>Applied</span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Accent Color Palette Selector (5 Themes) */}
+            <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-200 font-display">
+                  Primary Accent Color Palette (5 Colors)
+                </label>
+                <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold capitalize">
+                  Active: {colorTheme}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                {availableThemes.map((pal) => {
+                  const isSelected = colorTheme === pal.id;
+                  return (
+                    <button
+                      key={pal.id}
+                      type="button"
+                      onClick={() => setColorTheme(pal.id)}
+                      className={`p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1.5 ${
+                        isSelected
+                          ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20'
+                          : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:border-slate-300'
+                      }`}
+                    >
+                      <span
+                        className="w-5 h-5 rounded-full shadow-xs"
+                        style={{ backgroundColor: pal.primaryHex }}
+                      />
+                      <span className="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">{pal.label.split(' ')[0]}</span>
+                      <span className="text-[10px] text-slate-400 capitalize">{pal.badge}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

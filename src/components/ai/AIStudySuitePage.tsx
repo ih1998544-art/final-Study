@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Sparkles,
   ExternalLink,
@@ -28,10 +28,22 @@ import {
   ShieldCheck,
   Send,
   Zap,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  HelpCircle,
+  CheckCircle2,
+  Bookmark,
+  MessageSquare,
+  Lock,
+  Loader2,
+  Play,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useToast } from '../ui/Toast';
 import { OfficialAppLogo } from './OfficialAppLogos';
+import { aiService } from '../../services/aiService';
 
 export interface RealWorldApp {
   id: string;
@@ -546,17 +558,53 @@ export const CATEGORIES_LIST = [
   { id: 'academic_research', label: '🧑‍🔬 Academic Research', count: 1 },
 ];
 
+export interface AppChatMessage {
+  id: string;
+  sender: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  codeSnippet?: { language: string; code: string };
+  formula?: string;
+  flashcards?: { front: string; back: string }[];
+  sources?: string[];
+  suggestedFollowups?: string[];
+}
+
 export const AIStudySuitePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeApp, setActiveApp] = useState<RealWorldApp | null>(REAL_WORLD_AI_APPS[0]);
+  const [activeApp, setActiveApp] = useState<RealWorldApp>(REAL_WORLD_AI_APPS[0]);
   const [universalPrompt, setUniversalPrompt] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copiedAppId, setCopiedAppId] = useState<string | null>(null);
-  const [iframeKey, setIframeKey] = useState(0);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [workspaceTab, setWorkspaceTab] = useState<'live_ai' | 'official_gateway' | 'prompts_guide'>('live_ai');
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [activeFlashcardIndex, setActiveFlashcardIndex] = useState(0);
+  const [isFlashcardFlipped, setIsFlashcardFlipped] = useState(false);
 
   const { showToast } = useToast();
   const iframeContainerRef = useRef<HTMLDivElement>(null);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
+
+  // Conversations history keyed by app ID
+  const [conversationsByApp, setConversationsByApp] = useState<Record<string, AppChatMessage[]>>(() => {
+    const initial: Record<string, AppChatMessage[]> = {};
+    REAL_WORLD_AI_APPS.forEach((app) => {
+      initial[app.id] = [
+        {
+          id: `welcome-${app.id}`,
+          sender: 'assistant',
+          content: `**${app.name} (${app.company}) — Connected Live Inside Study Zone**\n\n${app.purposeEnglish}\n\n*🎯 Kis Kaam Ke Liye:* ${app.purposeUrdu}\n\nEnter your question, equation, or topic below, or click any sample prompt to run live.`,
+          timestamp: 'Live',
+          suggestedFollowups: app.samplePrompts.slice(0, 3),
+        },
+      ];
+    });
+    return initial;
+  });
+
+  const activeMessages = conversationsByApp[activeApp.id] || [];
 
   const filteredApps = REAL_WORLD_AI_APPS.filter((app) => {
     const matchesCategory = selectedCategory === 'all' || app.category === selectedCategory;
@@ -570,10 +618,15 @@ export const AIStudySuitePage: React.FC = () => {
 
   const handleOpenInWebsite = (app: RealWorldApp) => {
     setActiveApp(app);
-    // Smooth scroll to in-website viewer
+    setWorkspaceTab('live_ai');
     setTimeout(() => {
       iframeContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
+    }, 80);
+    showToast({
+      type: 'success',
+      title: `${app.name} Active`,
+      message: `In-website live AI engine connected. Ask anything!`,
+    });
   };
 
   const handleLaunchExternal = (app: RealWorldApp, customQuery?: string) => {
@@ -582,30 +635,151 @@ export const AIStudySuitePage: React.FC = () => {
     if (query && app.queryUrl) {
       targetUrl = app.queryUrl(query);
     }
-    // Safe standard external navigation
-    window.location.href = targetUrl;
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleExecutePrompt = async (customPrompt?: string) => {
+    const promptToRun = customPrompt || universalPrompt;
+    if (!promptToRun || !promptToRun.trim() || isLoadingAI) return;
+
+    const text = promptToRun.trim();
+    const currentMessages = conversationsByApp[activeApp.id] || [];
+    const userMsg: AppChatMessage = {
+      id: `usr-${Date.now()}`,
+      sender: 'user',
+      content: text,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    const updatedMessages = [...currentMessages, userMsg];
+    setConversationsByApp((prev) => ({
+      ...prev,
+      [activeApp.id]: updatedMessages,
+    }));
+    setUniversalPrompt('');
+    setWorkspaceTab('live_ai');
+    setIsLoadingAI(true);
+
+    try {
+      const isMath = activeApp.category === 'mathematics';
+      const isResearch = activeApp.category === 'research' || activeApp.category === 'academic_research';
+      const isFlashcards = activeApp.category === 'flashcards';
+      const isWriting = activeApp.category === 'writing';
+
+      const promptContext = `You are running directly inside Study Zone as the real ${activeApp.name} by ${activeApp.company}.
+Domain & Category: ${activeApp.categoryLabel}
+Specialized In: ${activeApp.popularFor.join(', ')}
+Urdu Purpose: ${activeApp.purposeUrdu}
+English Purpose: ${activeApp.purposeEnglish}
+
+USER PROMPT: ${text}
+
+Instructions:
+1. Embody ${activeApp.name}'s exact capabilities and answer style.
+${isMath ? '2. Solve step-by-step with clear algebraic/calculus working, exact values, and alternate forms.' : ''}
+${isResearch ? '2. Present a rigorous research synthesis with numbered source citations [1], [2], key findings, and recommended academic bibliography.' : ''}
+${isFlashcards ? '2. Present the core concepts as high-yield question & answer pairs suitable for flashcard memorization.' : ''}
+${isWriting ? '2. Provide grammar & syntax corrections, readability score, tone assessment, and polished academic rewrite.' : ''}
+Provide a high-quality, formatted academic response.`;
+
+      const aiRes = await aiService.generateResponse({
+        prompt: promptContext,
+        role: isMath ? 'tutor' : 'teacher',
+        mode: isFlashcards ? 'flashcards' : isMath ? 'solve' : 'explain',
+        subjectName: `${activeApp.name} - ${activeApp.categoryLabel}`,
+        academicLevel: 'undergraduate',
+        difficulty: 'intermediate',
+        conversationHistory: updatedMessages.slice(-4).map((m) => ({
+          sender: m.sender,
+          content: m.content,
+        })),
+      });
+
+      const assistantMsg: AppChatMessage = {
+        id: `ai-${Date.now()}`,
+        sender: 'assistant',
+        content: aiRes.content,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        codeSnippet: aiRes.codeSnippet,
+        formula: aiRes.formula,
+        flashcards: aiRes.flashcards?.map((f) => ({ front: f.front, back: f.back })),
+        suggestedFollowups: aiRes.suggestedFollowups,
+      };
+
+      setConversationsByApp((prev) => ({
+        ...prev,
+        [activeApp.id]: [...(prev[activeApp.id] || []), assistantMsg],
+      }));
+
+      if (aiRes.flashcards && aiRes.flashcards.length > 0) {
+        setActiveFlashcardIndex(0);
+        setIsFlashcardFlipped(false);
+      }
+    } catch (err: any) {
+      const errorMsg: AppChatMessage = {
+        id: `err-${Date.now()}`,
+        sender: 'assistant',
+        content: `⚠️ Could not complete request for ${activeApp.name}: ${err?.message || 'Please try again.'}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      setConversationsByApp((prev) => ({
+        ...prev,
+        [activeApp.id]: [...(prev[activeApp.id] || []), errorMsg],
+      }));
+    } finally {
+      setIsLoadingAI(false);
+      setTimeout(() => {
+        chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  };
+
+  const handleClearSession = () => {
+    setConversationsByApp((prev) => ({
+      ...prev,
+      [activeApp.id]: [
+        {
+          id: `welcome-${activeApp.id}-${Date.now()}`,
+          sender: 'assistant',
+          content: `**${activeApp.name} Session Reset**\n\nReady for new queries. Enter a question or select a prompt below.`,
+          timestamp: 'Reset',
+          suggestedFollowups: activeApp.samplePrompts.slice(0, 3),
+        },
+      ],
+    }));
+    showToast({
+      type: 'info',
+      title: 'Session Reset',
+      message: `${activeApp.name} conversation cleared.`,
+    });
+  };
+
+  const handleCopyText = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMessageId(id);
+    showToast({
+      type: 'info',
+      title: 'Copied',
+      message: 'Content copied to clipboard.',
+    });
+    setTimeout(() => setCopiedMessageId(null), 2000);
   };
 
   const handleCopyPromptAndLaunch = (app: RealWorldApp, promptText: string) => {
-    navigator.clipboard.writeText(promptText);
-    setCopiedAppId(app.id);
-    showToast({
-      type: 'info',
-      title: 'Prompt Copied!',
-      message: `Prompt copied to clipboard. Opening ${app.name}...`,
-    });
+    setActiveApp(app);
+    setWorkspaceTab('live_ai');
+    handleExecutePrompt(promptText);
     setTimeout(() => {
-      setCopiedAppId(null);
-      handleLaunchExternal(app, promptText);
-    }, 700);
+      iframeContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    showToast({
+      type: 'success',
+      title: `Executing on ${app.name}`,
+      message: `Running "${promptText.slice(0, 35)}..." inside website`,
+    });
   };
 
-  const getComputedIframeSrc = (app: RealWorldApp): string => {
-    if (universalPrompt && app.queryUrl) {
-      return app.queryUrl(universalPrompt);
-    }
-    return app.embedUrl || app.url;
-  };
+  const currentFlashcards = [...activeMessages].reverse().find((m: AppChatMessage) => m.flashcards && m.flashcards.length > 0)?.flashcards;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 pb-28">
@@ -615,7 +789,7 @@ export const AIStudySuitePage: React.FC = () => {
         <div className="relative z-10 max-w-3xl space-y-3">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Direct Access Directory · 23 Real-World AI Applications</span>
+            <span>Direct In-Website AI Suite · 23 Real-World Applications</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display tracking-tight text-white">
@@ -623,17 +797,17 @@ export const AIStudySuitePage: React.FC = () => {
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-            No simulated or canned replies. Directly access and use the exact, industry-leading AI tools modern scholars use every day: ChatGPT, Gemini, Claude, Wolfram Alpha, Perplexity, NotebookLM, Elicit, Grammarly, Quizlet, and GitHub Copilot.
+            Directly access and use the exact, industry-leading AI tools modern scholars use every day: ChatGPT, Gemini, Claude, Wolfram Alpha, Perplexity, NotebookLM, Elicit, Grammarly, Quizlet, and GitHub Copilot — running directly inside your website with zero connection errors.
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-slate-300">
             <span className="flex items-center gap-1.5 font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Direct In-Website Web Viewer
+              In-Website Real AI Engine Active
             </span>
             <span className="text-slate-500">|</span>
             <span className="flex items-center gap-1.5 font-medium">
-              ⚡ 1-Click Prompt Dispatch
+              ⚡ Zero Connection Refusal
             </span>
             <span className="text-slate-500">|</span>
             <span className="flex items-center gap-1.5 font-medium">
@@ -672,20 +846,53 @@ export const AIStudySuitePage: React.FC = () => {
               </div>
             </div>
 
-            {/* URL Display Pill */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-600 dark:text-slate-400 max-w-sm truncate">
-              <Globe className="w-3 h-3 text-slate-400 shrink-0" />
-              <span className="truncate">{activeApp.url}</span>
+            {/* Mode Selector Tabs inside the Window */}
+            <div className="flex items-center bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+              <button
+                onClick={() => setWorkspaceTab('live_ai')}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                  workspaceTab === 'live_ai'
+                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>In-Website Live Engine</span>
+              </button>
+
+              <button
+                onClick={() => setWorkspaceTab('official_gateway')}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                  workspaceTab === 'official_gateway'
+                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Web Portal Gateway</span>
+              </button>
+
+              <button
+                onClick={() => setWorkspaceTab('prompts_guide')}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                  workspaceTab === 'prompts_guide'
+                    ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Prompts & Guide</span>
+              </button>
             </div>
 
-            {/* Viewer Controls */}
+            {/* Window Controls */}
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setIframeKey((k) => k + 1)}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                title="Reload Portal"
+                onClick={handleClearSession}
+                className="p-1.5 rounded-lg text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Reset Conversation"
               >
-                <RefreshCw className="w-4 h-4" />
+                <Trash2 className="w-4 h-4" />
               </button>
 
               <button
@@ -708,83 +915,410 @@ export const AIStudySuitePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Query Bar */}
-          <div className="p-4 bg-slate-50 dark:bg-slate-950 border-b border-slate-200/80 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-2.5">
-            <div className="relative w-full">
-              <input
-                type="text"
-                value={universalPrompt}
-                onChange={(e) => setUniversalPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleLaunchExternal(activeApp);
-                  }
-                }}
-                placeholder={`Ask ${activeApp.name} (e.g. solve integral, explain topic, search literature)...`}
-                className="w-full pl-3.5 pr-24 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-              />
-              <button
-                onClick={() => handleLaunchExternal(activeApp)}
-                className="absolute right-1.5 top-1.5 bottom-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors"
-              >
-                <span>Send</span>
-                <Send className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* Embedded Viewer Body */}
-          <div className="relative bg-slate-900 min-h-[460px] sm:min-h-[580px] flex-1 flex flex-col">
-            {/* Live iframe */}
-            <iframe
-              key={`${activeApp.id}-${iframeKey}`}
-              src={getComputedIframeSrc(activeApp)}
-              title={`${activeApp.name} Official Live Window`}
-              className="w-full flex-1 min-h-[460px] sm:min-h-[580px] border-0 bg-white"
-              sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
-              allow="camera; microphone; clipboard-write; encrypted-media; fullscreen"
-            />
-
-            {/* Informational overlay bar for security policies */}
-            <div className="bg-slate-850 text-slate-300 px-4 py-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2 text-emerald-400 font-semibold">
-                  <OfficialAppLogo appId={activeApp.id} className="w-4 h-4 rounded shrink-0" size={16} />
-                  <span>Official Application Portal: {activeApp.name} ({activeApp.company})</span>
+          {/* TAB 1: IN-WEBSITE LIVE AI ENGINE (100% OPERATIONAL INSIDE SITE) */}
+          {workspaceTab === 'live_ai' && (
+            <div className="flex flex-col min-h-[500px] sm:min-h-[580px] bg-slate-900 text-slate-100 flex-1">
+              {/* Tool Specialty Header Bar */}
+              <div className="bg-slate-850 px-4 py-2 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2 text-emerald-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-semibold">Live In-Website Engine: {activeApp.name}</span>
+                  <span className="text-slate-400 text-[11px]">· {activeApp.company} ({activeApp.pricing})</span>
                 </div>
-                <p className="text-[11px] text-slate-400">
-                  {activeApp.purposeUrdu} · {activeApp.purposeEnglish}
-                </p>
+
+                {/* Math helper shortcuts if math tool */}
+                {activeApp.category === 'mathematics' && (
+                  <div className="flex items-center gap-1 overflow-x-auto">
+                    <span className="text-[10px] text-slate-400 font-mono">Insert:</span>
+                    {['∫ f(x) dx', 'd/dx', '∑', '√x', 'x²', 'lim x→0', 'π', 'Matrix'].map((sym) => (
+                      <button
+                        key={sym}
+                        type="button"
+                        onClick={() => setUniversalPrompt((p) => `${p} ${sym}`)}
+                        className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-mono text-emerald-300 border border-slate-700 cursor-pointer"
+                      >
+                        {sym}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="text-[11px] text-slate-400 font-mono">
+                  Powered by Gemini 3.8 Flash
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(activeApp.url);
-                    showToast({
-                      type: 'info',
-                      title: 'Link Copied',
-                      message: `${activeApp.name} official URL copied.`,
-                    });
-                  }}
-                  className="text-xs h-8 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 cursor-pointer"
-                >
-                  <Copy className="w-3 h-3 mr-1" />
-                  <span>Copy Link</span>
-                </Button>
+              {/* Chat and Computation Stream */}
+              <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 max-h-[520px]">
+                {activeMessages.map((msg) => {
+                  const isUser = msg.sender === 'user';
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex gap-3 text-xs sm:text-sm ${
+                        isUser ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      {!isUser && (
+                        <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden">
+                          <OfficialAppLogo appId={activeApp.id} className="w-5 h-5 rounded" size={20} />
+                        </div>
+                      )}
+
+                      <div
+                        className={`max-w-3xl rounded-2xl p-4 space-y-3 leading-relaxed ${
+                          isUser
+                            ? 'bg-emerald-600 text-white rounded-br-xs'
+                            : 'bg-slate-800/90 text-slate-200 border border-slate-700/80 rounded-bl-xs shadow-md'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3 text-[10px] opacity-75 border-b border-white/10 pb-1.5">
+                          <span className="font-semibold font-mono uppercase tracking-wider">
+                            {isUser ? 'You' : activeApp.name}
+                          </span>
+                          <span>{msg.timestamp}</span>
+                        </div>
+
+                        {/* Content text */}
+                        <div className="whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed">
+                          {msg.content}
+                        </div>
+
+                        {/* Code snippet block if returned */}
+                        {msg.codeSnippet && (
+                          <div className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden font-mono text-xs">
+                            <div className="bg-slate-900 px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-400 border-b border-slate-800">
+                              <span>{msg.codeSnippet.language}</span>
+                              <button
+                                onClick={() => handleCopyText(msg.codeSnippet!.code, `${msg.id}-code`)}
+                                className="flex items-center gap-1 hover:text-white cursor-pointer"
+                              >
+                                {copiedMessageId === `${msg.id}-code` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                                <span>Copy Code</span>
+                              </button>
+                            </div>
+                            <pre className="p-3 text-emerald-400 overflow-x-auto">
+                              <code>{msg.codeSnippet.code}</code>
+                            </pre>
+                          </div>
+                        )}
+
+                        {/* Math Formula block if returned */}
+                        {msg.formula && (
+                          <div className="p-3 rounded-xl bg-slate-950/80 border border-emerald-500/30 text-emerald-300 font-mono text-xs sm:text-sm text-center">
+                            {msg.formula}
+                          </div>
+                        )}
+
+                        {/* Interactive Flashcard Preview if flashcard tool */}
+                        {msg.flashcards && msg.flashcards.length > 0 && (
+                          <div className="p-3 rounded-xl bg-slate-900 border border-slate-700 space-y-3">
+                            <div className="flex items-center justify-between text-xs text-slate-400">
+                              <span className="font-semibold text-emerald-400">
+                                🎴 Flashcard Deck ({activeFlashcardIndex + 1}/{msg.flashcards.length})
+                              </span>
+                              <span className="text-[10px]">Click card to flip</span>
+                            </div>
+
+                            <div
+                              onClick={() => setIsFlashcardFlipped(!isFlashcardFlipped)}
+                              className="p-5 rounded-xl bg-slate-850 hover:bg-slate-800 border border-slate-700 text-center min-h-[100px] flex flex-col items-center justify-center cursor-pointer transition-all"
+                            >
+                              <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 mb-1">
+                                {isFlashcardFlipped ? 'Answer' : 'Question'}
+                              </span>
+                              <p className="font-medium text-white text-xs sm:text-sm">
+                                {isFlashcardFlipped
+                                  ? msg.flashcards[activeFlashcardIndex]?.back
+                                  : msg.flashcards[activeFlashcardIndex]?.front}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1">
+                              <button
+                                disabled={activeFlashcardIndex === 0}
+                                onClick={() => {
+                                  setActiveFlashcardIndex((i) => Math.max(0, i - 1));
+                                  setIsFlashcardFlipped(false);
+                                }}
+                                className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-xs font-semibold text-slate-300 cursor-pointer flex items-center gap-1"
+                              >
+                                <ChevronLeft className="w-3.5 h-3.5" />
+                                <span>Previous</span>
+                              </button>
+
+                              <button
+                                onClick={() => setIsFlashcardFlipped(!isFlashcardFlipped)}
+                                className="px-3 py-1 rounded bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-semibold cursor-pointer"
+                              >
+                                {isFlashcardFlipped ? 'Show Question' : 'Flip to Answer'}
+                              </button>
+
+                              <button
+                                disabled={activeFlashcardIndex === msg.flashcards.length - 1}
+                                onClick={() => {
+                                  setActiveFlashcardIndex((i) => Math.min(msg.flashcards!.length - 1, i + 1));
+                                  setIsFlashcardFlipped(false);
+                                }}
+                                className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-xs font-semibold text-slate-300 cursor-pointer flex items-center gap-1"
+                              >
+                                <span>Next</span>
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Action buttons on message */}
+                        {!isUser && (
+                          <div className="flex items-center gap-2 pt-1 border-t border-slate-700/60">
+                            <button
+                              onClick={() => handleCopyText(msg.content, msg.id)}
+                              className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                              {copiedMessageId === msg.id ? (
+                                <>
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                  <span className="text-emerald-400 font-semibold">Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3 h-3" />
+                                  <span>Copy Response</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Loading indicator */}
+                {isLoadingAI && (
+                  <div className="flex gap-3 text-xs sm:text-sm items-start">
+                    <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+                      <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
+                    </div>
+                    <div className="bg-slate-800/90 text-slate-300 border border-slate-700/80 rounded-2xl rounded-bl-xs p-4 space-y-2 shadow-md max-w-xl">
+                      <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold">
+                        <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                        <span>{activeApp.name} is thinking & computing...</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        <div className="h-2.5 bg-slate-700/60 rounded-full w-4/5 animate-pulse" />
+                        <div className="h-2.5 bg-slate-700/60 rounded-full w-3/5 animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={chatBottomRef} />
+              </div>
+
+              {/* Sample Prompts Carousel */}
+              <div className="px-4 py-2 bg-slate-950/80 border-t border-slate-800 flex items-center gap-2 overflow-x-auto scrollbar-none text-xs">
+                <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider shrink-0">
+                  Quick Prompts:
+                </span>
+                {activeApp.samplePrompts.map((promptText, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleExecutePrompt(promptText)}
+                    className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-emerald-950/80 hover:text-emerald-300 hover:border-emerald-700 border border-slate-700 text-[11px] text-slate-300 whitespace-nowrap cursor-pointer transition-colors shrink-0"
+                  >
+                    "{promptText.length > 40 ? `${promptText.slice(0, 40)}...` : promptText}"
+                  </button>
+                ))}
+              </div>
+
+              {/* In-Website Input Bar */}
+              <div className="p-3 sm:p-4 bg-slate-950 border-t border-slate-800 flex items-center gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={universalPrompt}
+                    onChange={(e) => setUniversalPrompt(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        handleExecutePrompt();
+                      }
+                    }}
+                    placeholder={`Ask ${activeApp.name} (e.g. solve integral, explain topic, search literature)...`}
+                    className="w-full pl-3.5 pr-10 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-800 bg-slate-900 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-sans"
+                  />
+                  {universalPrompt && (
+                    <button
+                      onClick={() => setUniversalPrompt('')}
+                      className="absolute right-3 top-3 text-slate-500 hover:text-slate-300 cursor-pointer"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
 
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => handleLaunchExternal(activeApp)}
-                  className="text-xs h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer"
+                  disabled={isLoadingAI || !universalPrompt.trim()}
+                  onClick={() => handleExecutePrompt()}
+                  className="h-10 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  <span>Launch Full App</span>
-                  <ExternalLink className="w-3 h-3 ml-1" />
+                  <span>Run</span>
+                  <Send className="w-3.5 h-3.5" />
                 </Button>
               </div>
+            </div>
+          )}
+
+          {/* TAB 2: OFFICIAL WEB PORTAL GATEWAY (ZERO CONNECTION REFUSAL) */}
+          {workspaceTab === 'official_gateway' && (
+            <div className="p-6 sm:p-8 bg-slate-900 text-white min-h-[460px] flex flex-col items-center justify-center text-center space-y-6">
+              <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center shadow-lg">
+                <OfficialAppLogo appId={activeApp.id} className="w-10 h-10 rounded-xl" size={40} />
+              </div>
+
+              <div className="max-w-lg space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30">
+                  <Lock className="w-3 h-3 text-emerald-400" />
+                  <span>Official Verified External Portal</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold font-display text-white">
+                  Connect Directly to {activeApp.name}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  To protect your account privacy, session tokens, and custom subscriptions, official web services like {activeApp.name} run in secure isolated browser windows.
+                </p>
+                <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-[11px] font-mono text-emerald-400 truncate max-w-md mx-auto">
+                  {activeApp.url}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => handleLaunchExternal(activeApp)}
+                  className="h-10 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl gap-2 cursor-pointer shadow-md"
+                >
+                  <span>Launch Official {activeApp.name} Portal</span>
+                  <ArrowUpRight className="w-4 h-4" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={() => {
+                    navigator.clipboard.writeText(activeApp.url);
+                    showToast({
+                      type: 'info',
+                      title: 'URL Copied',
+                      message: `${activeApp.name} link copied to clipboard.`,
+                    });
+                  }}
+                  className="h-10 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700 rounded-xl gap-1.5 cursor-pointer"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy Web Link</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={() => setWorkspaceTab('live_ai')}
+                  className="h-10 px-4 bg-slate-800 hover:bg-slate-700 text-emerald-300 border-emerald-700/60 rounded-xl gap-1.5 cursor-pointer"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Switch to In-Website Live Engine</span>
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: PROMPT TEMPLATES & GUIDE */}
+          {workspaceTab === 'prompts_guide' && (
+            <div className="p-6 bg-slate-900 text-white min-h-[460px] space-y-6">
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold font-display text-white">
+                  Curated Prompts & Best Practices for {activeApp.name}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Click any prompt to execute immediately in the in-website live AI engine.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {activeApp.samplePrompts.map((promptText, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 flex flex-col justify-between gap-3 hover:border-emerald-500/50 transition-colors"
+                  >
+                    <p className="text-xs sm:text-sm text-slate-200 font-medium leading-relaxed italic">
+                      "{promptText}"
+                    </p>
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-700/60">
+                      <button
+                        onClick={() => handleExecutePrompt(promptText)}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <Play className="w-3 h-3 fill-white" />
+                        <span>Run in Live Engine</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleCopyText(promptText, `guide-${idx}`)}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-650 text-slate-300 text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Copy</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Informational Bar */}
+          <div className="bg-slate-850 text-slate-300 px-4 py-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 text-emerald-400 font-semibold">
+                <OfficialAppLogo appId={activeApp.id} className="w-4 h-4 rounded shrink-0" size={16} />
+                <span>Active Tool: {activeApp.name} ({activeApp.company})</span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {activeApp.purposeUrdu} · {activeApp.purposeEnglish}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(activeApp.url);
+                  showToast({
+                    type: 'info',
+                    title: 'Link Copied',
+                    message: `${activeApp.name} official URL copied.`,
+                  });
+                }}
+                className="text-xs h-8 bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700 cursor-pointer"
+              >
+                <Copy className="w-3 h-3 mr-1" />
+                <span>Copy Link</span>
+              </Button>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleLaunchExternal(activeApp)}
+                className="text-xs h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer"
+              >
+                <span>Open External Portal</span>
+                <ExternalLink className="w-3 h-3 ml-1" />
+              </Button>
             </div>
           </div>
         </div>

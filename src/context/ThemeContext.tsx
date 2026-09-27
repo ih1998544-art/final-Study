@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type ThemeMode = 'light' | 'dark' | 'sepia' | 'midnight' | 'nord';
+export type ThemeMode = 'light' | 'dark' | 'sepia' | 'midnight' | 'nord' | 'cyber' | 'forest';
 export type ColorTheme = 'emerald' | 'sapphire' | 'amethyst' | 'crimson' | 'amber';
 
 export interface ThemeModeOption {
@@ -12,6 +12,7 @@ export interface ThemeModeOption {
   textHex: string;
   borderHex: string;
   isDarkSpectrum: boolean;
+  iconName?: string;
 }
 
 export const THEME_MODES: ThemeModeOption[] = [
@@ -24,6 +25,7 @@ export const THEME_MODES: ThemeModeOption[] = [
     textHex: '#0F172A',
     borderHex: '#E2E8F0',
     isDarkSpectrum: false,
+    iconName: 'Sun',
   },
   {
     id: 'dark',
@@ -34,6 +36,7 @@ export const THEME_MODES: ThemeModeOption[] = [
     textHex: '#F8FAFC',
     borderHex: '#334155',
     isDarkSpectrum: true,
+    iconName: 'Moon',
   },
   {
     id: 'sepia',
@@ -44,26 +47,51 @@ export const THEME_MODES: ThemeModeOption[] = [
     textHex: '#382E25',
     borderHex: '#DFD5BD',
     isDarkSpectrum: false,
+    iconName: 'BookOpen',
   },
   {
     id: 'midnight',
     label: 'OLED Midnight',
     sublabel: 'Pure pitch black OLED saver',
-    badge: 'OLED',
+    badge: 'OLED Black',
     bgHex: '#000000',
     textHex: '#FFFFFF',
     borderHex: '#262626',
     isDarkSpectrum: true,
+    iconName: 'Sparkles',
   },
   {
     id: 'nord',
     label: 'Nordic Frost',
     sublabel: 'Deep Arctic slate navy',
-    badge: 'Arctic',
+    badge: 'Arctic Navy',
     bgHex: '#0D1527',
     textHex: '#E2E8F0',
     borderHex: '#1E293B',
     isDarkSpectrum: true,
+    iconName: 'Compass',
+  },
+  {
+    id: 'cyber',
+    label: 'Cyber Matrix',
+    sublabel: 'High-contrast neon terminal',
+    badge: 'Neon Matrix',
+    bgHex: '#040808',
+    textHex: '#00FF9D',
+    borderHex: '#059669',
+    isDarkSpectrum: true,
+    iconName: 'Terminal',
+  },
+  {
+    id: 'forest',
+    label: 'Botanical Sage',
+    sublabel: 'Natural calm forest & sage earth',
+    badge: 'Pine Forest',
+    bgHex: '#07130E',
+    textHex: '#E2ECE6',
+    borderHex: '#1A3328',
+    isDarkSpectrum: true,
+    iconName: 'Trees',
   },
 ];
 
@@ -105,7 +133,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         saved === 'dark' ||
         saved === 'sepia' ||
         saved === 'midnight' ||
-        saved === 'nord'
+        saved === 'nord' ||
+        saved === 'cyber' ||
+        saved === 'forest'
       ) {
         return saved as ThemeMode;
       }
@@ -141,8 +171,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const body = document.body;
 
     // Clear any previous mode classes
-    root.classList.remove('dark', 'sepia', 'midnight', 'nord', 'light');
-    body?.classList.remove('dark', 'sepia', 'midnight', 'nord', 'light');
+    root.classList.remove('dark', 'sepia', 'midnight', 'nord', 'cyber', 'forest', 'light');
+    body?.classList.remove('dark', 'sepia', 'midnight', 'nord', 'cyber', 'forest', 'light');
 
     // Add current mode class and attributes
     root.classList.add(themeMode);

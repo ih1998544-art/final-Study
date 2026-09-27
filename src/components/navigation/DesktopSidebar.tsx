@@ -174,19 +174,11 @@ export const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
             <button
               onClick={toggleThemeMode}
               className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-[11px] font-medium text-slate-600 dark:text-slate-300 cursor-pointer border border-slate-200 dark:border-slate-800"
-              title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              title="Click to cycle theme mode (7 modes available)"
             >
-              {themeMode === 'dark' ? (
-                <>
-                  <Sun className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Light</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Dark</span>
-                </>
-              )}
+              <Sun className="w-3.5 h-3.5 text-amber-500 dark:text-indigo-400" />
+              <span className="capitalize">{themeMode}</span>
+              <span className="text-[9px] text-slate-400">↺</span>
             </button>
           </div>
 

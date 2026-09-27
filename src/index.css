@@ -188,6 +188,36 @@ body[data-color="amber"],
     --text-muted: #64748B;
   }
 
+  /* 4. Cyber Matrix Neon Mode */
+  html[data-mode="cyber"],
+  body[data-mode="cyber"] {
+    color-scheme: dark;
+    --canvas-bg: #040808;
+    --surface-card: #0A1412;
+    --surface-subtle: #10221E;
+    --border-subtle: #18382E;
+    --border-strong: #235243;
+
+    --text-primary: #E6FFF6;
+    --text-secondary: #88D8B8;
+    --text-muted: #4FA888;
+  }
+
+  /* 5. Botanical Forest Sage Mode */
+  html[data-mode="forest"],
+  body[data-mode="forest"] {
+    color-scheme: dark;
+    --canvas-bg: #07130E;
+    --surface-card: #0D1F17;
+    --surface-subtle: #152F24;
+    --border-subtle: #1F4233;
+    --border-strong: #2E5E4A;
+
+    --text-primary: #E8F2EC;
+    --text-secondary: #9CBBAA;
+    --text-muted: #6E8F7E;
+  }
+
   .dark[data-color="sapphire"], html.dark[data-color="sapphire"] {
     --brand-primary: #3B82F6;
     --brand-primary-hover: #2563EB;
@@ -283,6 +313,42 @@ body[data-color="amber"],
   html[data-mode="nord"] .bg-slate-900 {
     background-color: #131E35 !important;
     border-color: #24365D !important;
+  }
+
+  /* 4. Cyber Matrix Neon Overrides */
+  html[data-mode="cyber"] body,
+  body[data-mode="cyber"] {
+    background-color: #040808 !important;
+    color: #E6FFF6 !important;
+  }
+  html[data-mode="cyber"] .dark\:bg-slate-950,
+  html[data-mode="cyber"] .bg-slate-950 {
+    background-color: #040808 !important;
+  }
+  html[data-mode="cyber"] .dark\:bg-slate-900,
+  html[data-mode="cyber"] .bg-slate-900,
+  html[data-mode="cyber"] .dark\:bg-slate-850,
+  html[data-mode="cyber"] .bg-slate-850 {
+    background-color: #0A1412 !important;
+    border-color: #18382E !important;
+  }
+
+  /* 5. Botanical Forest Sage Overrides */
+  html[data-mode="forest"] body,
+  body[data-mode="forest"] {
+    background-color: #07130E !important;
+    color: #E8F2EC !important;
+  }
+  html[data-mode="forest"] .dark\:bg-slate-950,
+  html[data-mode="forest"] .bg-slate-950 {
+    background-color: #07130E !important;
+  }
+  html[data-mode="forest"] .dark\:bg-slate-900,
+  html[data-mode="forest"] .bg-slate-900,
+  html[data-mode="forest"] .dark\:bg-slate-850,
+  html[data-mode="forest"] .bg-slate-850 {
+    background-color: #0D1F17 !important;
+    border-color: #1F4233 !important;
   }
 
   h1, h2, h3, .font-display {
