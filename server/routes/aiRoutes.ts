@@ -88,6 +88,36 @@ aiRouter.post('/chat', aiInferenceLimiter, optionalAuth, async (req: Authenticat
   }
 });
 
+// POST /api/ai/tool
+// Specialized generation for any of the 15 study tools
+aiRouter.post('/tool', aiInferenceLimiter, optionalAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { toolId, prompt, options, subjectName } = req.body;
+    if (!toolId || !prompt || typeof prompt !== 'string') {
+      return res.status(400).json({
+        error: 'ValidationError',
+        message: 'toolId and prompt are required.',
+      });
+    }
+
+    const result = await aiService.generateToolResult({
+      toolId,
+      prompt: prompt.trim(),
+      options: options || {},
+      subjectName,
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('[AI Tool Route Error]', error);
+    res.status(500).json({
+      error: 'ToolServiceError',
+      message: 'Failed to generate study tool output.',
+      details: error.message,
+    });
+  }
+});
+
 // GET /api/ai/conversations
 aiRouter.get('/conversations', optionalAuth, (req: AuthenticatedRequest, res: Response) => {
   const userId = req.user?.id || 'usr_849201';

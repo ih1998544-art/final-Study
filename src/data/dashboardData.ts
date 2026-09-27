@@ -70,9 +70,9 @@ export interface StudentDashboardData {
 
 export const INITIAL_DASHBOARD_DATA: StudentDashboardData = {
   user: {
-    fullName: 'Jordan Diaz',
-    email: 'jordan.diaz@university.edu',
-    avatarInitials: 'JD',
+    fullName: 'Irshad Hussain',
+    email: 'irshad.hussain@studyzone.edu',
+    avatarInitials: 'IH',
     academicLevel: 'undergraduate',
     academicLevelLabel: 'Undergraduate · Year 2',
     scholarLevel: 4,

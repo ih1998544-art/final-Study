@@ -12,8 +12,8 @@ const AUTH_TOKEN_KEY = 'sz_auth_token_v1';
 
 export const DEFAULT_USER_PROFILE: UserProfile = {
   id: 'usr_849201',
-  name: 'Jordan Diaz',
-  email: 'jordan.diaz@stanford.edu',
+  name: 'Irshad Hussain',
+  email: 'irshad.hussain@studyzone.edu',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
   academicLevel: 'Undergraduate (College)',
   universityOrSchool: 'Stanford University · Department of Computer Science & Mathematics',
@@ -106,8 +106,8 @@ export const DEFAULT_USER_PROFILE: UserProfile = {
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
   account: {
-    fullName: 'Jordan Diaz',
-    email: 'jordan.diaz@stanford.edu',
+    fullName: 'Irshad Hussain',
+    email: 'irshad.hussain@studyzone.edu',
     twoFactorEnabled: false,
     sessionTimeoutMinutes: 60,
   },

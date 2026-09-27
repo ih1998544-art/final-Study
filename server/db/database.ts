@@ -49,9 +49,9 @@ class DatabaseStore {
     // 1. Seed Default User
     const defaultUser: UserRecord = {
       id: defaultUserId,
-      email: 'jordan.diaz@stanford.edu',
+      email: 'irshad.hussain@studyzone.edu',
       passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$simulated_secure_hash_v1',
-      name: 'Jordan Diaz',
+      name: 'Irshad Hussain',
       academicLevel: 'Undergraduate (College)',
       universityOrSchool: 'Stanford University · Department of Computer Science & Mathematics',
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',

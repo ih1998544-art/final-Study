@@ -1,12 +1,86 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 1. Dynamic Palette: Sapphire (Royal Blue) */
+:root[data-color="sapphire"],
+html[data-color="sapphire"],
+body[data-color="sapphire"],
+.dark[data-color="sapphire"] {
+  --color-emerald-50: #eff6ff !important;
+  --color-emerald-100: #dbeafe !important;
+  --color-emerald-200: #bfdbfe !important;
+  --color-emerald-300: #93c5fd !important;
+  --color-emerald-400: #60a5fa !important;
+  --color-emerald-500: #3b82f6 !important;
+  --color-emerald-600: #2563eb !important;
+  --color-emerald-700: #1d4ed8 !important;
+  --color-emerald-800: #1e40af !important;
+  --color-emerald-900: #1e3a8a !important;
+  --color-emerald-950: #0f172a !important;
+}
+
+/* 2. Dynamic Palette: Amethyst (Royal Purple) */
+:root[data-color="amethyst"],
+html[data-color="amethyst"],
+body[data-color="amethyst"],
+.dark[data-color="amethyst"] {
+  --color-emerald-50: #f5f3ff !important;
+  --color-emerald-100: #ede9fe !important;
+  --color-emerald-200: #ddd6fe !important;
+  --color-emerald-300: #c4b5fd !important;
+  --color-emerald-400: #a78bfa !important;
+  --color-emerald-500: #8b5cf6 !important;
+  --color-emerald-600: #7c3aed !important;
+  --color-emerald-700: #6d28d9 !important;
+  --color-emerald-800: #5b21b6 !important;
+  --color-emerald-900: #4c1d95 !important;
+  --color-emerald-950: #1e103a !important;
+}
+
+/* 3. Dynamic Palette: Crimson (Ruby Rose / Red) */
+:root[data-color="crimson"],
+html[data-color="crimson"],
+body[data-color="crimson"],
+.dark[data-color="crimson"] {
+  --color-emerald-50: #fff1f2 !important;
+  --color-emerald-100: #ffe4e6 !important;
+  --color-emerald-200: #fecdd3 !important;
+  --color-emerald-300: #fda4af !important;
+  --color-emerald-400: #fb7185 !important;
+  --color-emerald-500: #f43f5e !important;
+  --color-emerald-600: #e11d48 !important;
+  --color-emerald-700: #be123c !important;
+  --color-emerald-800: #9f1239 !important;
+  --color-emerald-900: #881337 !important;
+  --color-emerald-950: #26040e !important;
+}
+
+/* 4. Dynamic Palette: Amber (Solar Gold / Warm Orange) */
+:root[data-color="amber"],
+html[data-color="amber"],
+body[data-color="amber"],
+.dark[data-color="amber"] {
+  --color-emerald-50: #fffbeb !important;
+  --color-emerald-100: #fef3c7 !important;
+  --color-emerald-200: #fde68a !important;
+  --color-emerald-300: #fcd34d !important;
+  --color-emerald-400: #fbbf24 !important;
+  --color-emerald-500: #f59e0b !important;
+  --color-emerald-600: #d97706 !important;
+  --color-emerald-700: #b45309 !important;
+  --color-emerald-800: #92400e !important;
+  --color-emerald-900: #78350f !important;
+  --color-emerald-950: #2d1500 !important;
+}
+
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-display: 'Cabinet Grotesk', 'Plus Jakarta Sans', -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Study Zone Design System Tokens */
+    /* Emerald Theme (Default) */
     --brand-primary: #059669;
     --brand-primary-hover: #047857;
     --brand-primary-subtle: #ECFDF5;
@@ -23,12 +97,192 @@
     --text-muted: #64748B;
   }
 
+  /* Sapphire Theme */
+  :root[data-color="sapphire"], html[data-color="sapphire"] {
+    --brand-primary: #2563EB;
+    --brand-primary-hover: #1D4ED8;
+    --brand-primary-subtle: #EFF6FF;
+    --brand-primary-border: #BFDBFE;
+  }
+
+  /* Amethyst Theme */
+  :root[data-color="amethyst"], html[data-color="amethyst"] {
+    --brand-primary: #7C3AED;
+    --brand-primary-hover: #6D28D9;
+    --brand-primary-subtle: #F5F3FF;
+    --brand-primary-border: #DDD6FE;
+  }
+
+  /* Crimson Theme */
+  :root[data-color="crimson"], html[data-color="crimson"] {
+    --brand-primary: #E11D48;
+    --brand-primary-hover: #BE123C;
+    --brand-primary-subtle: #FFF1F2;
+    --brand-primary-border: #FECDD3;
+  }
+
+  /* Amber Theme */
+  :root[data-color="amber"], html[data-color="amber"] {
+    --brand-primary: #D97706;
+    --brand-primary-hover: #B45309;
+    --brand-primary-subtle: #FFFBEB;
+    --brand-primary-border: #FDE68A;
+  }
+
+  /* Dark Mode Tokens (Charcoal Night) */
+  .dark, html.dark, html[data-mode="dark"] {
+    color-scheme: dark;
+    --canvas-bg: #090D16;
+    --surface-card: #111827;
+    --surface-subtle: #1F2937;
+    --border-subtle: #374151;
+    --border-strong: #4B5563;
+
+    --text-primary: #F9FAFB;
+    --text-secondary: #D1D5DB;
+    --text-muted: #9CA3AF;
+  }
+
+  /* 1. Sepia Reading Parchment Mode */
+  html[data-mode="sepia"],
+  body[data-mode="sepia"] {
+    color-scheme: light;
+    --canvas-bg: #F4EEDD;
+    --surface-card: #FAF6EB;
+    --surface-subtle: #ECE4D0;
+    --border-subtle: #DFD5BD;
+    --border-strong: #CFC2A4;
+
+    --text-primary: #382E25;
+    --text-secondary: #574B3F;
+    --text-muted: #7E7062;
+  }
+
+  /* 2. OLED Midnight Mode (Pitch Black) */
+  html[data-mode="midnight"],
+  body[data-mode="midnight"] {
+    color-scheme: dark;
+    --canvas-bg: #000000;
+    --surface-card: #080808;
+    --surface-subtle: #121212;
+    --border-subtle: #222222;
+    --border-strong: #333333;
+
+    --text-primary: #FFFFFF;
+    --text-secondary: #D4D4D8;
+    --text-muted: #A1A1AA;
+  }
+
+  /* 3. Nordic Frost Mode (Arctic Slate Navy) */
+  html[data-mode="nord"],
+  body[data-mode="nord"] {
+    color-scheme: dark;
+    --canvas-bg: #0D1527;
+    --surface-card: #131E35;
+    --surface-subtle: #1C2B4B;
+    --border-subtle: #24365D;
+    --border-strong: #324B80;
+
+    --text-primary: #E2E8F0;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+  }
+
+  .dark[data-color="sapphire"], html.dark[data-color="sapphire"] {
+    --brand-primary: #3B82F6;
+    --brand-primary-hover: #2563EB;
+    --brand-primary-subtle: #1E293B;
+    --brand-primary-border: #3B82F6;
+  }
+
+  .dark[data-color="amethyst"], html.dark[data-color="amethyst"] {
+    --brand-primary: #A78BFA;
+    --brand-primary-hover: #8B5CF6;
+    --brand-primary-subtle: #2E1065;
+    --brand-primary-border: #7C3AED;
+  }
+
+  .dark[data-color="crimson"], html.dark[data-color="crimson"] {
+    --brand-primary: #FB7185;
+    --brand-primary-hover: #F43F5E;
+    --brand-primary-subtle: #4C0519;
+    --brand-primary-border: #E11D48;
+  }
+
+  .dark[data-color="amber"], html.dark[data-color="amber"] {
+    --brand-primary: #FBBF24;
+    --brand-primary-hover: #F59E0B;
+    --brand-primary-subtle: #451A03;
+    --brand-primary-border: #D97706;
+  }
+
   body {
     font-family: var(--font-sans);
     background-color: var(--canvas-bg);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  html.dark body {
+    background-color: #090D16;
+    color: #F9FAFB;
+  }
+
+  /* 1. Sepia Reading Parchment Overrides */
+  html[data-mode="sepia"] body,
+  body[data-mode="sepia"] {
+    background-color: #F4EEDD !important;
+    color: #382E25 !important;
+  }
+  html[data-mode="sepia"] .bg-white,
+  html[data-mode="sepia"] .bg-slate-50,
+  html[data-mode="sepia"] .bg-slate-100 {
+    background-color: #FAF6EB !important;
+    border-color: #DFD5BD !important;
+  }
+  html[data-mode="sepia"] .text-slate-900,
+  html[data-mode="sepia"] .text-slate-800 {
+    color: #382E25 !important;
+  }
+  html[data-mode="sepia"] .text-slate-600,
+  html[data-mode="sepia"] .text-slate-500 {
+    color: #574B3F !important;
+  }
+
+  /* 2. OLED Midnight (True Pitch Black) Overrides */
+  html[data-mode="midnight"] body,
+  body[data-mode="midnight"] {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+  }
+  html[data-mode="midnight"] .dark\:bg-slate-950,
+  html[data-mode="midnight"] .bg-slate-950 {
+    background-color: #000000 !important;
+  }
+  html[data-mode="midnight"] .dark\:bg-slate-900,
+  html[data-mode="midnight"] .bg-slate-900,
+  html[data-mode="midnight"] .dark\:bg-slate-850,
+  html[data-mode="midnight"] .bg-slate-850 {
+    background-color: #080808 !important;
+    border-color: #222222 !important;
+  }
+
+  /* 3. Nordic Frost (Arctic Slate Navy) Overrides */
+  html[data-mode="nord"] body,
+  body[data-mode="nord"] {
+    background-color: #0D1527 !important;
+    color: #E2E8F0 !important;
+  }
+  html[data-mode="nord"] .dark\:bg-slate-950,
+  html[data-mode="nord"] .bg-slate-950 {
+    background-color: #0D1527 !important;
+  }
+  html[data-mode="nord"] .dark\:bg-slate-900,
+  html[data-mode="nord"] .bg-slate-900 {
+    background-color: #131E35 !important;
+    border-color: #24365D !important;
   }
 
   h1, h2, h3, .font-display {
@@ -55,7 +309,12 @@
   background: #cbd5e1;
   border-radius: 9999px;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: #374151;
+}
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
-
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}

@@ -210,15 +210,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               </span>
             </div>
 
-            {/* Quick Action: Ask Study Zone AI */}
+            {/* Quick Action: Launch Real AI Tools */}
             <Button
               variant="primary"
               size="md"
               onClick={() => onNavigate('ai_tutor')}
               className="shadow-md whitespace-nowrap justify-center"
             >
-              <Bot className="w-4 h-4 mr-2" />
-              Ask Study Zone AI
+              <Sparkles className="w-4 h-4 mr-2" />
+              Launch Real AI Tools
             </Button>
           </div>
         </div>

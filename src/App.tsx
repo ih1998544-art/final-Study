@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ToastProvider, useToast } from './components/ui/Toast';
+import { ThemeProvider } from './context/ThemeContext';
 import { TopHeader } from './components/navigation/TopHeader';
 import { MobileNav } from './components/navigation/MobileNav';
 import { DesktopSidebar } from './components/navigation/DesktopSidebar';
@@ -7,6 +8,7 @@ import { FoundationShowcase } from './components/foundation/FoundationShowcase';
 import { HomePage } from './components/home/HomePage';
 import { SubjectsCatalogView } from './components/subjects/SubjectsCatalogView';
 import { SubjectDetailView } from './components/subjects/SubjectDetailView';
+import { AIStudySuitePage } from './components/ai/AIStudySuitePage';
 import { AIWorkspace } from './components/ai/AIWorkspace';
 import { StudentDashboard } from './components/dashboard/StudentDashboard';
 import { PracticeDashboard } from './components/practice/PracticeDashboard';
@@ -119,7 +121,7 @@ function AppContent() {
   const selectedSubject = subjects.find((s) => s.id === selectedSubjectId) || null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-emerald-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col selection:bg-emerald-600 selection:text-white transition-colors duration-200">
       {/* Top Bar Contract Navigation */}
       <TopHeader
         activeTab={activeTab}
@@ -246,16 +248,8 @@ function AppContent() {
                 onCreateCustomSubject={handleCreateCustomSubject}
               />
             )
-          ) : activeTab === 'ai_tutor' ? (
-            <AIWorkspace
-              subjects={subjects}
-              initialSubjectId={selectedSubjectId}
-              initialPrompt={pendingAIPrompt}
-              onExploreSubjects={() => {
-                setSelectedSubjectId(null);
-                setActiveTab('subjects');
-              }}
-            />
+          ) : activeTab === 'ai_tutor' || activeTab === 'study_tools' ? (
+            <AIStudySuitePage />
           ) : activeTab === 'practice' ? (
             <PracticeDashboard
               subjects={subjects}
@@ -285,16 +279,6 @@ function AppContent() {
                   setActiveTab('subjects');
                 }
               }}
-            />
-          ) : activeTab === 'study_tools' ? (
-            <StudyToolsDashboard
-              initialToolId={selectedStudyToolId}
-              onNavigateHome={() => {
-                setSelectedStudyToolId(null);
-                setActiveTab('home');
-              }}
-              onNavigateToPractice={() => setActiveTab('practice')}
-              onNavigateToSubjects={() => setActiveTab('subjects')}
             />
           ) : activeTab === 'planner' ? (
             <StudyPlannerView
@@ -444,9 +428,11 @@ function AppContent() {
 
 export default function App() {
   return (
-    <ToastProvider>
-      <AppContent />
-    </ToastProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </ThemeProvider>
   );
 }
 
