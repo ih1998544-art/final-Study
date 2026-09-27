@@ -80,7 +80,24 @@ async function startServer() {
       appType: 'spa',
     });
     app.use(vite.middlewares);
-    console.log('[Study Zone] Mounted Vite dev middleware in development mode.');
+
+    // HTML fallback for SPA client routes
+    app.use('*', async (req: Request, res: Response, next: NextFunction) => {
+      const url = req.originalUrl;
+      if (url.startsWith('/api')) {
+        return next();
+      }
+      try {
+        const indexPath = path.resolve('index.html');
+        let template = fs.readFileSync(indexPath, 'utf-8');
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
+    console.log('[Study Zone] Mounted Vite dev middleware in development mode with SPA fallback.');
   } else {
     const distPath = path.resolve('dist');
     if (fs.existsSync(distPath)) {

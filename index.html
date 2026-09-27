@@ -3,27 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script>
-      (function() {
-        try {
-          var target = window;
-          var originalFetch = target.fetch;
-          var currentFetch = typeof originalFetch === 'function' ? originalFetch.bind(target) : originalFetch;
-          Object.defineProperty(target, 'fetch', {
-            get: function() {
-              return currentFetch;
-            },
-            set: function(val) {
-              currentFetch = val;
-            },
-            configurable: true,
-            enumerable: true
-          });
-        } catch (e) {
-          // Ignore if cannot redefine
-        }
-      })();
-    </script>
     <title>Study Zone — Learn Smarter. Study Better. Go Further.</title>
     <meta name="description" content="Learn Smarter. Study Better. Go Further. An AI-powered education ecosystem for students of every level." />
     <meta property="og:title" content="Study Zone — Learn Smarter. Study Better. Go Further." />
