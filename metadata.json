@@ -1,0 +1,6 @@
+{
+  "name": "Study Zone",
+  "description": "Learn Smarter. Study Better. Go Further. An AI-powered education ecosystem for students of every level.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

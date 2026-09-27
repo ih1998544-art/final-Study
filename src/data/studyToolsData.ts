@@ -1,0 +1,645 @@
+/**
+ * Study Zone - 15 Academic Study Tools Catalog & Specifications
+ * Rigorous specifications, defaults, options, and sample prompts for each tool.
+ */
+
+import { StudyToolDefinition, ToolCategory } from '../types/studyTools';
+
+export const TOOL_CATEGORIES: { id: ToolCategory; label: string; description: string }[] = [
+  { id: 'core_ai', label: 'AI Mentors & Tutors', description: 'Interactive Socratic guidance, tutoring, and concept breakdown' },
+  { id: 'generators', label: 'Synthesis & Notes', description: 'Cornell notes, flashcard decks, study roadmaps, and summaries' },
+  { id: 'testing', label: 'Exams & Quizzes', description: 'Diagnostic quizzes, MCQs, and formal mock exam papers' },
+  { id: 'writing_language', label: 'Writing & Polyglot', description: 'Essay outlining, rhetorical refinement, and academic translation' },
+  { id: 'stem_coding', label: 'STEM & Code', description: 'Mathematical formulas, algorithms, step-by-step problem solver' },
+];
+
+export const STUDY_TOOLS_REGISTRY: StudyToolDefinition[] = [
+  {
+    id: 'ai_tutor',
+    title: 'AI Tutor & Socratic Mentor',
+    shortName: 'AI Tutor',
+    badge: 'Flagship',
+    category: 'core_ai',
+    description: 'Interactive pedagogical dialogue that uses the Socratic method to guide you to deep conceptual breakthroughs without giving away instant answers.',
+    detailedInstruction: 'Ask any question or submit a concept you are struggling with. The AI Tutor probes your reasoning, provides intuition, and scaffolds your understanding.',
+    inputLabel: 'What topic or question would you like to explore today?',
+    inputPlaceholder: 'e.g. Explain how transformers use self-attention to process sentences in parallel, or why does marginal revenue equal marginal cost in profit maximization?',
+    samplePrompts: [
+      'Why does the second derivative test determine local maxima and minima?',
+      'How does the mitochondria create ATP through chemiosmosis?',
+      'Can you explain the difference between Monopolistic Competition and Oligopoly with real firms?'
+    ],
+    options: [
+      {
+        id: 'academicLevel',
+        label: 'Academic Level',
+        type: 'select',
+        defaultValue: 'undergraduate',
+        options: [
+          { label: 'Middle School (Foundation)', value: 'middle_school' },
+          { label: 'High School (AP / A-Levels / IB)', value: 'high_school' },
+          { label: 'Undergraduate (University)', value: 'undergraduate' },
+          { label: 'Graduate / Professional', value: 'graduate' },
+        ],
+      },
+      {
+        id: 'pedagogyStyle',
+        label: 'Teaching Style',
+        type: 'select',
+        defaultValue: 'socratic',
+        options: [
+          { label: 'Socratic Dialogue (Guided Questions)', value: 'socratic' },
+          { label: 'Direct Pedagogical Lecture', value: 'direct' },
+          { label: 'Analogy & Visual Mental Models', value: 'analogy' },
+          { label: 'First Principles & Axiomatic Proof', value: 'first_principles' },
+        ],
+      },
+      {
+        id: 'includeCheckQuestion',
+        label: 'Include Diagnostic Question',
+        type: 'toggle',
+        defaultValue: true,
+      },
+    ],
+    iconName: 'Bot',
+    colorScheme: 'emerald',
+  },
+  {
+    id: 'ai_notes',
+    title: 'AI Notes Generator',
+    shortName: 'Notes Generator',
+    badge: 'High Yield',
+    category: 'generators',
+    description: 'Converts unstructured textbook excerpts, lecture transcripts, or study topics into pristine Cornell Notes, bullet outlines, and high-retention summaries.',
+    detailedInstruction: 'Paste raw lecture text or specify a syllabus topic. The generator extracts active recall cues, synthesizes structured notes, and drafts a concise summary.',
+    inputLabel: 'Topic, Syllabus Unit, or Raw Lecture Transcript',
+    inputPlaceholder: 'Paste lecture transcript or enter a topic: e.g. "Thermodynamics: First and Second Laws, Entropy, Carnot Cycle, Heat Engines..."',
+    samplePrompts: [
+      'Cellular Respiration: Glycolysis, Krebs Cycle, Electron Transport Chain, and Chemiosmosis',
+      'The Great Depression: Causes, Stock Market Crash of 1929, New Deal policies, and Economic Recovery',
+      'Data Structures: Binary Search Trees, Balanced AVL Rotations, and Red-Black properties'
+    ],
+    options: [
+      {
+        id: 'noteFormat',
+        label: 'Note Format',
+        type: 'select',
+        defaultValue: 'cornell',
+        options: [
+          { label: 'Gold Standard Cornell Notes', value: 'cornell' },
+          { label: 'Hierarchical Bullet Outline', value: 'outline' },
+          { label: 'High-Density Executive Cheat Sheet', value: 'cheat_sheet' },
+          { label: 'Key Terms & Definitions Matrix', value: 'glossary' },
+        ],
+      },
+      {
+        id: 'depthLevel',
+        label: 'Detail Depth',
+        type: 'select',
+        defaultValue: 'detailed',
+        options: [
+          { label: 'Concise (Quick Revision)', value: 'concise' },
+          { label: 'Comprehensive & Detailed', value: 'detailed' },
+          { label: 'Exam-Ready Rubric Optimized', value: 'exam_ready' },
+        ],
+      },
+    ],
+    iconName: 'FileText',
+    colorScheme: 'blue',
+  },
+  {
+    id: 'ai_summarizer',
+    title: 'AI Academic Summarizer',
+    shortName: 'Summarizer',
+    badge: 'Productivity',
+    category: 'generators',
+    description: 'Compresses dense academic research, lengthy case studies, or textbook chapters into crystal-clear executive summaries and bullet insights.',
+    detailedInstruction: 'Paste long articles, academic chapters, or historical documents to receive an executive synthesis highlighting primary arguments, methodology, and core conclusions.',
+    inputLabel: 'Paste text or article excerpt to summarize',
+    inputPlaceholder: 'Paste excerpt or abstract here (up to 5,000 words)...',
+    samplePrompts: [
+      'John Maynard Keynes\' General Theory of Employment, Interest and Money: The principle of effective demand and liquidity preference.',
+      'CRISPR-Cas9 Gene Editing Mechanism: Guide RNA targeting, Cas9 endonuclease cleavage, and double-strand break repair pathways.',
+      'Adam Smith\'s Wealth of Nations: The Division of Labour, Absolute Advantage, and the Invisible Hand mechanism.'
+    ],
+    options: [
+      {
+        id: 'summaryLength',
+        label: 'Summary Length',
+        type: 'select',
+        defaultValue: 'executive',
+        options: [
+          { label: 'TL;DR Fast 3-Bullet Takeaway', value: 'tldr' },
+          { label: 'Executive 1-Page Summary', value: 'executive' },
+          { label: 'Section-by-Section Deep Dive', value: 'sectional' },
+        ],
+      },
+      {
+        id: 'focusAngle',
+        label: 'Focus Angle',
+        type: 'select',
+        defaultValue: 'concepts',
+        options: [
+          { label: 'Core Theoretical Concepts', value: 'concepts' },
+          { label: 'High-Yield Exam Focus & Pitfalls', value: 'exam' },
+          { label: 'Empirical Evidence & Applications', value: 'empirical' },
+        ],
+      },
+    ],
+    iconName: 'FileCheck2',
+    colorScheme: 'indigo',
+  },
+  {
+    id: 'ai_quiz_gen',
+    title: 'AI Quiz Generator',
+    shortName: 'Quiz Generator',
+    badge: 'Interactive',
+    category: 'testing',
+    description: 'Generates balanced diagnostic quizzes with multiple choice, short-answer conceptual checks, and worked diagnostic solutions.',
+    detailedInstruction: 'Select your topic and difficulty to generate an interactive quiz you can practice immediately with instant scoring.',
+    inputLabel: 'Subject, Topic, or Unit to Test',
+    inputPlaceholder: 'e.g. Organic Chemistry: Functional Groups, SN1 vs SN2 Mechanisms, and Elimination Reactions',
+    samplePrompts: [
+      'Newtonian Mechanics: Conservation of Momentum, Elastic vs Inelastic Collisions, and Impulse',
+      'Macroeconomics: Fiscal Policy vs Monetary Policy, IS-LM Model, and Inflationary Gaps',
+      'Python Programming: Object-Oriented Principles, Inheritance, Polymorphism, and Decorators'
+    ],
+    options: [
+      {
+        id: 'questionCount',
+        label: 'Number of Questions',
+        type: 'select',
+        defaultValue: '5',
+        options: [
+          { label: '3 Quick Questions', value: '3' },
+          { label: '5 Standard Questions', value: '5' },
+          { label: '8 Comprehensive Questions', value: '8' },
+        ],
+      },
+      {
+        id: 'difficulty',
+        label: 'Target Difficulty',
+        type: 'select',
+        defaultValue: 'intermediate',
+        options: [
+          { label: 'Beginner / Foundational', value: 'beginner' },
+          { label: 'Intermediate / Standard', value: 'intermediate' },
+          { label: 'Advanced / Honors / Competitive', value: 'advanced' },
+        ],
+      },
+    ],
+    iconName: 'HelpCircle',
+    colorScheme: 'purple',
+  },
+  {
+    id: 'ai_mcq_gen',
+    title: 'AI MCQ Generator',
+    shortName: 'MCQ Generator',
+    badge: 'Exam Drill',
+    category: 'testing',
+    description: 'Constructs board-calibrated multiple choice questions complete with plausible distractors, diagnostic explanations for every option, and trap alerts.',
+    detailedInstruction: 'Specify your target chapter or curriculum to receive realistic multiple-choice questions designed to eliminate guessing and test true understanding.',
+    inputLabel: 'Curriculum Topic for Multiple-Choice Questions',
+    inputPlaceholder: 'e.g. AP Biology: Cellular Respiration, Glycolysis ATP yields, and Pyruvate Oxidation',
+    samplePrompts: [
+      'Microeconomics: Price Elasticity of Demand, Cross-Price Elasticity, and Consumer Surplus',
+      'Linear Algebra: Eigenvalues, Characteristic Polynomials, and Matrix Diagonalization',
+      'World History: World War I Alliances, The Schlieffen Plan, and Trench Warfare Technologies'
+    ],
+    options: [
+      {
+        id: 'questionCount',
+        label: 'Number of MCQs',
+        type: 'select',
+        defaultValue: '5',
+        options: [
+          { label: '3 MCQs', value: '3' },
+          { label: '5 MCQs', value: '5' },
+          { label: '10 MCQs (Full Drill)', value: '10' },
+        ],
+      },
+      {
+        id: 'bloomsTaxonomy',
+        label: 'Cognitive Level',
+        type: 'select',
+        defaultValue: 'application',
+        options: [
+          { label: 'Knowledge & Recall (Definitions)', value: 'recall' },
+          { label: 'Application & Scenario Analysis', value: 'application' },
+          { label: 'Critical Evaluation & Edge Cases', value: 'evaluation' },
+        ],
+      },
+      {
+        id: 'explainDistractors',
+        label: 'Explain Every Wrong Option',
+        type: 'toggle',
+        defaultValue: true,
+      },
+    ],
+    iconName: 'ListChecks',
+    colorScheme: 'teal',
+  },
+  {
+    id: 'ai_flashcard_gen',
+    title: 'AI Flashcard Generator',
+    shortName: 'Flashcards',
+    badge: 'Spaced Repetition',
+    category: 'generators',
+    description: 'Generates active-recall flashcard decks engineered for spaced repetition with memory hints, mnemonics, and conceptual milestones.',
+    detailedInstruction: 'Input any subject or textbook passage to generate high-retention front/back flashcards you can flip and practice directly.',
+    inputLabel: 'Topic or Terminology Set to Flashcard',
+    inputPlaceholder: 'e.g. Neuroscience: Action Potential, Synaptic Transmission, Neurotransmitters, and Long-Term Potentiation',
+    samplePrompts: [
+      'Physics: Wave-Particle Duality, De Broglie Wavelength, and Photoelectric Effect',
+      'Business Law: Tort Law, Negligence Elements, Strict Liability, and Contract Enforceability',
+      'Spanish Vocabulary: Subjunctive Mood Triggers, Irregular Verbs, and Conditional Phrases'
+    ],
+    options: [
+      {
+        id: 'cardCount',
+        label: 'Card Count',
+        type: 'select',
+        defaultValue: '5',
+        options: [
+          { label: '5 High-Yield Cards', value: '5' },
+          { label: '8 Comprehensive Cards', value: '8' },
+          { label: '12 Full Deck', value: '12' },
+        ],
+      },
+      {
+        id: 'cardFocus',
+        label: 'Card Focus',
+        type: 'select',
+        defaultValue: 'concepts',
+        options: [
+          { label: 'Core Definitions & Principles', value: 'concepts' },
+          { label: 'Formulas & Derivations', value: 'formulas' },
+          { label: 'Exam Traps & Distinctions', value: 'traps' },
+        ],
+      },
+      {
+        id: 'includeHints',
+        label: 'Include Recall Hints & Mnemonics',
+        type: 'toggle',
+        defaultValue: true,
+      },
+    ],
+    iconName: 'Layers',
+    colorScheme: 'amber',
+  },
+  {
+    id: 'ai_exam_gen',
+    title: 'AI Exam Generator',
+    shortName: 'Exam Generator',
+    badge: 'Mock Paper',
+    category: 'testing',
+    description: 'Constructs formal examination papers with Section A (Definitions & MCQs), Section B (Analytical Problems), and Section C (Long-Form Synthesis) with full mark schemes.',
+    detailedInstruction: 'Enter your subject or syllabus scope to generate a full mock examination with time allocations, mark points, and official scoring rubrics.',
+    inputLabel: 'Target Syllabus or Course for Mock Exam Paper',
+    inputPlaceholder: 'e.g. A-Level Physics Paper 1: Mechanics, Electricity, and Particle Physics (Year 13)',
+    samplePrompts: [
+      'Calculus BC: Taylor Series, Polar Coordinates, and Differential Equations Mock Exam',
+      'AP US Government: Federalism, Separation of Powers, Judicial Review, and Civil Rights',
+      'Database Systems: SQL Queries, Normalization to BCNF, ACID transactions, and Indexing'
+    ],
+    options: [
+      {
+        id: 'examFormat',
+        label: 'Exam Duration',
+        type: 'select',
+        defaultValue: '30_min',
+        options: [
+          { label: '15-Minute Rapid Mock (20 Marks)', value: '15_min' },
+          { label: '30-Minute Standard Paper (50 Marks)', value: '30_min' },
+          { label: '60-Minute Comprehensive (100 Marks)', value: '60_min' },
+        ],
+      },
+      {
+        id: 'includeRubric',
+        label: 'Include Official Mark Scheme & Rubric',
+        type: 'toggle',
+        defaultValue: true,
+      },
+    ],
+    iconName: 'GraduationCap',
+    colorScheme: 'rose',
+  },
+  {
+    id: 'ai_study_planner',
+    title: 'AI Study Planner',
+    shortName: 'Study Planner',
+    badge: 'Roadmap',
+    category: 'generators',
+    description: 'Builds an optimized day-by-day study roadmap calibrated around your target exam date, daily available hours, and weak areas.',
+    detailedInstruction: 'Provide your syllabus scope, remaining days until the exam, and daily study budget to receive a milestone roadmap with Pomodoro task breakdowns.',
+    inputLabel: 'Subjects, Target Exam, and Current Preparation Level',
+    inputPlaceholder: 'e.g. 7 days until Final Exam in Organic Chemistry and Molecular Biology, 3 hours study time per day',
+    samplePrompts: [
+      'Preparing for AP Calculus BC in 14 days, currently struggling with Series Convergence tests',
+      'Computer Science Algorithms Midterm in 5 days, need to master Graph Traversal and Dynamic Programming',
+      'CFA Level 1: 30-day comprehensive revision plan covering Quantitative Methods and Financial Reporting'
+    ],
+    options: [
+      {
+        id: 'timeframe',
+        label: 'Roadmap Timeframe',
+        type: 'select',
+        defaultValue: '7_days',
+        options: [
+          { label: '3-Day Urgent Revision Sprint', value: '3_days' },
+          { label: '7-Day Comprehensive Mastery', value: '7_days' },
+          { label: '14-Day Structured Study Plan', value: '14_days' },
+          { label: '30-Day Full Semester Mastery', value: '30_days' },
+        ],
+      },
+      {
+        id: 'dailyHours',
+        label: 'Daily Available Study Time',
+        type: 'select',
+        defaultValue: '3',
+        options: [
+          { label: '1 - 2 Hours / Day (Focused)', value: '1.5' },
+          { label: '3 - 4 Hours / Day (Standard)', value: '3' },
+          { label: '5+ Hours / Day (Intensive)', value: '6' },
+        ],
+      },
+    ],
+    iconName: 'Calendar',
+    colorScheme: 'emerald',
+  },
+  {
+    id: 'homework_helper',
+    title: 'Homework Helper',
+    shortName: 'Homework Helper',
+    badge: 'Step-by-Step',
+    category: 'stem_coding',
+    description: 'Demystifies tricky homework problems by isolating given parameters, identifying governing equations, and explaining the reasoning behind every calculation.',
+    detailedInstruction: 'Paste any complex problem statement. The assistant provides verified step-by-step resolution, units analysis, and sanity checks to verify your final answers.',
+    inputLabel: 'Paste Homework Assignment or Problem Statement',
+    inputPlaceholder: 'e.g. "A 2.5 kg projectile is launched from ground level at 30 m/s at an angle of 45°. Calculate the maximum height, flight time, and kinetic energy at the apex."',
+    samplePrompts: [
+      'A cylinder of volume 0.05 m³ contains ideal gas at 300 K and 100 kPa. If heated reversibly to 450 K at constant pressure, calculate the work done.',
+      'Solve the initial value problem: dy/dx + 3y = e^(-2x) with y(0) = 2',
+      'A company has a revenue function R(x) = -2x² + 120x and cost C(x) = 20x + 200. Find the profit-maximizing output quantity.'
+    ],
+    options: [
+      {
+        id: 'helpMode',
+        label: 'Assistance Mode',
+        type: 'select',
+        defaultValue: 'step_by_step',
+        options: [
+          { label: 'Complete Step-by-Step Solution & Working', value: 'step_by_step' },
+          { label: 'Guided Hints & Conceptual Socratic Probe', value: 'guided_hints' },
+          { label: 'Sanity Check & Final Answer Verification', value: 'verify_only' },
+        ],
+      },
+      {
+        id: 'rigorLevel',
+        label: 'Academic Level',
+        type: 'select',
+        defaultValue: 'high_school',
+        options: [
+          { label: 'Middle / Junior School', value: 'middle_school' },
+          { label: 'High School (AP / Honors / IB)', value: 'high_school' },
+          { label: 'Collegiate / University', value: 'undergraduate' },
+        ],
+      },
+    ],
+    iconName: 'HelpCircle',
+    colorScheme: 'blue',
+  },
+  {
+    id: 'essay_assistant',
+    title: 'Essay Assistant & Writing Coach',
+    shortName: 'Essay Coach',
+    badge: 'Academic Writing',
+    category: 'writing_language',
+    description: 'Synthesizes defensible thesis statements, structures PEEL argument paragraphs, polishes academic prose, and provides critique on rhetorical cohesion.',
+    detailedInstruction: 'Enter your essay topic, prompt, or draft paragraph to receive an outline, thesis critique, academic vocabulary enhancements, and citations guidance.',
+    inputLabel: 'Essay Prompt, Thesis Statement, or Working Draft',
+    inputPlaceholder: 'e.g. "Analyze how Shakespeare uses the motif of disease and decay in Hamlet to mirror the moral corruption of Denmark\'s royal court."',
+    samplePrompts: [
+      'To what extent did the Treaty of Versailles contribute directly to the outbreak of World War II in 1939?',
+      'Argue whether social media algorithmic feeds enhance or erode democratic civic discourse.',
+      'Examine the ethical implications of artificial intelligence in healthcare diagnostics.'
+    ],
+    options: [
+      {
+        id: 'taskType',
+        label: 'Assistance Goal',
+        type: 'select',
+        defaultValue: 'outline_thesis',
+        options: [
+          { label: 'Formulate Thesis & Complete 5-Paragraph Outline', value: 'outline_thesis' },
+          { label: 'Review & Elevate Draft Prose (Academic Tone)', value: 'polish_draft' },
+          { label: 'Counter-Argument & Rebuttal Generator', value: 'counter_arguments' },
+        ],
+      },
+      {
+        id: 'citationFormat',
+        label: 'Citation Standard',
+        type: 'select',
+        defaultValue: 'APA',
+        options: [
+          { label: 'APA 7th Edition', value: 'APA' },
+          { label: 'MLA 9th Edition', value: 'MLA' },
+          { label: 'Chicago Manual of Style', value: 'Chicago' },
+          { label: 'Harvard Referencing', value: 'Harvard' },
+        ],
+      },
+    ],
+    iconName: 'PenTool',
+    colorScheme: 'indigo',
+  },
+  {
+    id: 'translation_tool',
+    title: 'Academic Translation & Polyglot',
+    shortName: 'Translation',
+    badge: 'Multilingual',
+    category: 'writing_language',
+    description: 'Bilingual conceptual translation with technical accuracy, phonetic pronunciation guides, Urdu/Arabic script support, and vocabulary matrices.',
+    detailedInstruction: 'Input terminology or paragraphs in English, Urdu, Arabic, Spanish, French, German, or Mandarin to receive contextual academic translations.',
+    inputLabel: 'Term or Text to Translate',
+    inputPlaceholder: 'e.g. "Equilibrium and Le Chatelier\'s principle in chemical reaction dynamics" or enter Urdu/Arabic text',
+    samplePrompts: [
+      'Explain Photosynthesis and Chloroplast anatomy with Urdu translation and pronunciation',
+      'Translate: "The central limit theorem establishes that the sampling distribution of the mean approaches normal distribution as sample size grows large."',
+      'Business Law key terms in Spanish: Contract Breach, Fiduciary Duty, Consideration, and Injunction'
+    ],
+    options: [
+      {
+        id: 'targetLanguage',
+        label: 'Target Language',
+        type: 'select',
+        defaultValue: 'urdu',
+        options: [
+          { label: 'Urdu (اردو)', value: 'urdu' },
+          { label: 'Arabic (العربية)', value: 'arabic' },
+          { label: 'Spanish (Español)', value: 'spanish' },
+          { label: 'French (Français)', value: 'french' },
+          { label: 'German (Deutsch)', value: 'german' },
+          { label: 'Mandarin Chinese (中文)', value: 'chinese' },
+          { label: 'English (Academic)', value: 'english' },
+        ],
+      },
+      {
+        id: 'includePhonetics',
+        label: 'Include Transliteration & Phonetics',
+        type: 'toggle',
+        defaultValue: true,
+      },
+    ],
+    iconName: 'Languages',
+    colorScheme: 'purple',
+  },
+  {
+    id: 'concept_explainer',
+    title: 'Concept Explainer (Multi-Lens)',
+    shortName: 'Concept Explainer',
+    badge: 'Cognitive Lenses',
+    category: 'core_ai',
+    description: 'Breaks down complex theoretical concepts across 5 distinct cognitive models: ELI5 Simple, Intuitive Analogy, Formal Definition, and Step-by-Step Mechanism.',
+    detailedInstruction: 'Type any difficult phenomenon, theorem, or abstract concept to understand it from multiple angles until it clicks.',
+    inputLabel: 'Concept or Theoretical Model to Deconstruct',
+    inputPlaceholder: 'e.g. Quantum Superposition, Bayes\' Theorem, General Relativity Spacetime Curvature, or Blockchain Consensus',
+    samplePrompts: [
+      'How does Bayes\' Theorem work and why is prior probability so crucial?',
+      'Explain the Fourier Transform: how does it convert time-domain signals to frequency spectra?',
+      'What is Keynesian Multiplier Effect and how does government spending stimulate aggregate demand?'
+    ],
+    options: [
+      {
+        id: 'lensMode',
+        label: 'Primary Cognitive Lens',
+        type: 'select',
+        defaultValue: 'multi_lens',
+        options: [
+          { label: 'All 5 Lenses (ELI5, Analogy, Formal, Trap, Applications)', value: 'multi_lens' },
+          { label: 'Explain Like I\'m 5 (Simple & Vivid)', value: 'eli5' },
+          { label: 'Real-World Real-Life Analogy', value: 'analogy' },
+          { label: 'Rigorous Mathematical / Scientific Formalism', value: 'rigorous' },
+        ],
+      },
+    ],
+    iconName: 'Lightbulb',
+    colorScheme: 'amber',
+  },
+  {
+    id: 'coding_tutor',
+    title: 'Coding & Software Tutor',
+    shortName: 'Coding Tutor',
+    badge: 'Code & Big-O',
+    category: 'stem_coding',
+    description: 'Explains complex algorithms, debugs compiler and logic errors, writes clean idiomatic code snippets, and calculates asymptotic Big-O space/time complexity.',
+    detailedInstruction: 'Paste code snippets or describe algorithmic challenges. Receive verified solutions with line-by-line commentary and edge-case test vectors.',
+    inputLabel: 'Code Snippet, Error Message, or Algorithmic Task',
+    inputPlaceholder: 'e.g. Implement Dijkstra\'s shortest path algorithm in TypeScript using a min-heap priority queue, or debug this React useEffect dependency cycle...',
+    samplePrompts: [
+      'Write a Python implementation of Merge Sort with step-by-step recursion tree and Big-O proof',
+      'Explain the difference between Concurrency and Parallelism with code examples in Go and TypeScript',
+      'Optimize two-sum problem from O(N²) brute force to O(N) using Hash Map'
+    ],
+    options: [
+      {
+        id: 'language',
+        label: 'Programming Language',
+        type: 'select',
+        defaultValue: 'typescript',
+        options: [
+          { label: 'TypeScript / JavaScript', value: 'typescript' },
+          { label: 'Python 3', value: 'python' },
+          { label: 'C++ 20', value: 'cpp' },
+          { label: 'Java', value: 'java' },
+          { label: 'Rust', value: 'rust' },
+          { label: 'SQL (PostgreSQL)', value: 'sql' },
+        ],
+      },
+      {
+        id: 'taskType',
+        label: 'Tutor Task',
+        type: 'select',
+        defaultValue: 'explain_and_solve',
+        options: [
+          { label: 'Explain Concept & Provide Optimal Implementation', value: 'explain_and_solve' },
+          { label: 'Debug Error & Find Logical Flaws', value: 'debug' },
+          { label: 'Big-O Space & Time Complexity Analysis', value: 'complexity' },
+          { label: 'Generate Unit Test Cases with Edge Cases', value: 'unit_tests' },
+        ],
+      },
+    ],
+    iconName: 'Code2',
+    colorScheme: 'cyan',
+  },
+  {
+    id: 'revision_assistant',
+    title: 'Revision Assistant & Rapid Cheat Sheet',
+    shortName: 'Revision Assistant',
+    badge: 'Last Minute',
+    category: 'generators',
+    description: 'Compresses entire chapters into ultra-dense 1-page rapid revision cheat sheets, formula inventories, high-frequency exam traps, and 15-minute quick checklists.',
+    detailedInstruction: 'Perfect for the hour before an exam. Synthesizes high-density memory triggers, mnemonic formulas, and the most common rubric deductions.',
+    inputLabel: 'Subject or Chapter for Rapid 1-Hour Pre-Exam Revision',
+    inputPlaceholder: 'e.g. AP Chemistry: Chemical Kinetics, Rate Laws, Arrhenius Equation, and Catalysts',
+    samplePrompts: [
+      'Microeconomics: Perfect Competition vs Monopoly, Deadweight Loss, and Elasticities',
+      'Physics Mechanics: Rotational Kinematics, Moment of Inertia, and Torque Conservation',
+      'Organic Chemistry: Reaction Mechanisms, Markovnikov vs Anti-Markovnikov, and Reagents'
+    ],
+    options: [
+      {
+        id: 'format',
+        label: 'Revision Format',
+        type: 'select',
+        defaultValue: 'cheat_sheet',
+        options: [
+          { label: 'Ultra-Dense 1-Page Exam Cheat Sheet', value: 'cheat_sheet' },
+          { label: 'Top 5 Deadliest Pitfalls & Antidotes', value: 'pitfalls' },
+          { label: 'Formula & Equation Quick Reference Table', value: 'formula_table' },
+          { label: '15-Minute Rapid Self-Audit Checklist', value: 'checklist' },
+        ],
+      },
+    ],
+    iconName: 'Zap',
+    colorScheme: 'rose',
+  },
+  {
+    id: 'formula_helper',
+    title: 'Formula & Equation Helper',
+    shortName: 'Formula Helper',
+    badge: 'Math & Science',
+    category: 'stem_coding',
+    description: 'Provides exact mathematical and physical equations with variable definitions, standard SI units, step-by-step derivations, and worked numerical examples.',
+    detailedInstruction: 'Enter any formula name, physics law, or calculus relation to receive symbol inventories, dimensional analysis, derivations, and practice substitutions.',
+    inputLabel: 'Formula Name, Law, or Theorem',
+    inputPlaceholder: 'e.g. Schrödinger Equation, Navier-Stokes, Black-Scholes Formula, Maxwell\'s Equations, or Quadratic Formula',
+    samplePrompts: [
+      'Ideal Gas Law and Van der Waals Equation for Real Gases with variable units and derivations',
+      'Black-Scholes Option Pricing Formula: d1, d2 parameters and volatility interpretations',
+      'Maxwell-Boltzmann Distribution: Mean, RMS, and Most Probable Molecular Speed Formulas'
+    ],
+    options: [
+      {
+        id: 'domain',
+        label: 'Academic Discipline',
+        type: 'select',
+        defaultValue: 'physics',
+        options: [
+          { label: 'Physics (Mechanics, E&M, Quantum)', value: 'physics' },
+          { label: 'Mathematics & Calculus', value: 'mathematics' },
+          { label: 'Chemistry & Thermodynamics', value: 'chemistry' },
+          { label: 'Economics & Financial Mathematics', value: 'economics' },
+          { label: 'Statistics & Probability', value: 'statistics' },
+        ],
+      },
+      {
+        id: 'includeDerivation',
+        label: 'Show Step-by-Step Derivation',
+        type: 'toggle',
+        defaultValue: true,
+      },
+    ],
+    iconName: 'Binary',
+    colorScheme: 'teal',
+  },
+];
